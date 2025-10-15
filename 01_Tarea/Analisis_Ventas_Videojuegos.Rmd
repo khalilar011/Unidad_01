@@ -1,0 +1,134 @@
+---
+title: "01_Tarea"
+author: "Khalil Arab"
+date: "2025-10-15"
+output: html_document
+---
+
+```{r}
+# ================================
+# 1. Cargar librerías y datos
+# ================================
+
+library(dplyr)
+library(ggplot2)
+
+data_path <- file.path("C:/Users/khali/OneDrive/Desktop/Universidad/Estadistica")
+data_file <- file.path(data_path, "vgsales.csv")
+```
+
+```{r}
+# ================================
+# 2. Crear la población de interés
+# ================================
+
+# Población: videojuegos con ventas globales menores a 2 millones
+poblacion <- dplyr::filter(data.vg, Global_Sales < 2)
+
+# Verificar el tamaño de la población
+nrow(poblacion)
+
+```
+
+```{r}
+# ================================
+# 3. Crear la variable Peso_NA
+# ================================
+
+# Peso_NA = proporción de ventas en Norteamérica sobre ventas globales
+poblacion <- poblacion %>%
+  mutate(Peso_NA = ifelse(Global_Sales > 0, NA_Sales / Global_Sales, 0))
+
+# Visualizar las primeras filas para confirmar
+head(poblacion[, c("Name", "NA_Sales", "Global_Sales", "Peso_NA")])
+```
+
+```{r}
+# ================================
+# 4. Crear dos muestras aleatorias de tamaño 500
+# ================================
+
+set.seed(123)  # para asegurar reproducibilidad
+muestra1 <- sample_n(poblacion, 500)
+muestra2 <- sample_n(poblacion, 500)
+
+# Mostrar tamaño de las muestras
+nrow(muestra1)
+nrow(muestra2)
+```
+
+```{r}
+# ================================
+# 5. Estadísticas descriptivas
+# ================================
+
+# Función para calcular medidas básicas
+estadisticas <- function(df) {
+  data.frame(
+    Media = mean(df$Peso_NA, na.rm = TRUE),
+    Mediana = median(df$Peso_NA, na.rm = TRUE),
+    Desviacion = sd(df$Peso_NA, na.rm = TRUE),
+    Minimo = min(df$Peso_NA, na.rm = TRUE),
+    Maximo = max(df$Peso_NA, na.rm = TRUE)
+  )
+}
+
+# Estadísticas comparativas
+cat("📌 Estadísticas de la población:\n")
+print(estadisticas(poblacion))
+
+cat("\n📌 Estadísticas de la muestra 1:\n")
+print(estadisticas(muestra1))
+
+cat("\n📌 Estadísticas de la muestra 2:\n")
+print(estadisticas(muestra2))
+```
+
+```{r}
+# ================================
+# 6. Gráficos de distribución
+# ================================
+
+# Histograma de la población
+ggplot(poblacion, aes(x = Peso_NA)) +
+  geom_histogram(bins = 30, fill = "steelblue", color = "black", alpha = 0.6) +
+  labs(title = "Distribución del Peso_NA - Población de interés",
+       x = "Peso_NA (NA_Sales / Global_Sales)",
+       y = "Frecuencia") +
+  theme_minimal()
+```
+
+```{r}
+# Histograma muestra 1
+ggplot(muestra1, aes(x = Peso_NA)) +
+  geom_histogram(bins = 30, fill = "orange", color = "black", alpha = 0.6) +
+  labs(title = "Distribución del Peso_NA - Muestra 1",
+       x = "Peso_NA",
+       y = "Frecuencia") +
+  theme_minimal()
+```
+
+```{r}
+# Histograma muestra 2
+ggplot(muestra2, aes(x = Peso_NA)) +
+  geom_histogram(bins = 30, fill = "green", color = "black", alpha = 0.6) +
+  labs(title = "Distribución del Peso_NA - Muestra 2",
+       x = "Peso_NA",
+       y = "Frecuencia") +
+  theme_minimal()
+```
+
+```{r}
+# ================================
+# 7. Conclusiones y observaciones
+# ================================
+
+cat("
+Conclusiones:
+--------------
+- Las dos muestras aleatorias de 500 observaciones mantienen tendencias similares a la población.
+- Se observa que las ventas en Norteamérica suelen representar una proporción considerable de las ventas globales.
+- Las medias y medianas de las muestras son cercanas a las de la población, lo que indica representatividad.
+- Las pequeñas diferencias entre las muestras reflejan variabilidad muestral esperada.
+")
+```
